@@ -1,0 +1,588 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Rivea</title>
+
+  <style>
+    :root{
+      --bg1:#05070c; --bg2:#0b1324;
+      --text:#d7e8ff; --muted:#9bb6d6;
+      --stroke: rgba(255,255,255,.10);
+      --cardA: rgba(255,255,255,.06);
+      --cardB: rgba(255,255,255,.035);
+      --shadow: 0 22px 70px rgba(0,0,0,.55);
+      --accent:#8fd3ff;
+      --accent2:#7c5cff;
+      --good:#48ffb6;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0; min-height:100vh;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
+      color:var(--text);
+      background:
+        radial-gradient(900px 520px at 20% 15%, rgba(143,211,255,.12), transparent 60%),
+        radial-gradient(900px 520px at 80% 25%, rgba(124,92,255,.10), transparent 60%),
+        linear-gradient(135deg,var(--bg1),var(--bg2));
+    }
+    a{color:inherit;text-decoration:none}
+    .container{max-width:1100px;margin:0 auto;padding:0 22px}
+
+    /* topbar */
+    .topbar{
+      position:fixed; inset:0 0 auto 0;
+      z-index:50;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      background: linear-gradient(to bottom, rgba(0,0,0,.55), rgba(0,0,0,.15));
+      backdrop-filter: blur(10px);
+    }
+    .topbar .row{
+      display:flex; align-items:center; justify-content:space-between;
+      padding:14px 0;
+      gap:14px;
+    }
+    .brand{display:flex; align-items:center; gap:12px; font-weight:900; letter-spacing:.2px}
+    .logo{
+      width:34px;height:34px;border-radius:12px;
+      background: radial-gradient(circle at 30% 30%, #c9f0ff, var(--accent));
+      box-shadow: 0 12px 30px rgba(143,211,255,.25);
+    }
+    .nav{
+      display:flex; align-items:center; gap:14px;
+      color:rgba(215,232,255,.85);
+      font-size:13px;
+    }
+    .nav a{
+      padding:9px 10px;
+      border-radius:12px;
+      border:1px solid transparent;
+      transition:.15s ease;
+    }
+    .nav a:hover{border-color:rgba(255,255,255,.10); background:rgba(255,255,255,.04)}
+    .right{
+      display:flex; align-items:center; gap:10px;
+    }
+    .chip{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:9px 12px; border-radius:999px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.03);
+      color:rgba(215,232,255,.85);
+      font-size:12px;
+      white-space:nowrap;
+    }
+    .dot{width:8px;height:8px;border-radius:99px;background:var(--good); box-shadow:0 0 18px rgba(72,255,182,.25)}
+    .btn{
+      cursor:pointer;
+      padding:10px 14px; border-radius:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.03));
+      color:var(--text);
+      transition:.15s ease;
+      font-weight:650;
+    }
+    .btn:hover{
+      transform: translateY(-2px);
+      border-color: rgba(143,211,255,.35);
+      box-shadow: 0 16px 40px rgba(0,0,0,.45), 0 0 30px rgba(143,211,255,.12);
+    }
+    .btn.primary{
+      border-color: rgba(143,211,255,.35);
+      background: linear-gradient(180deg, rgba(143,211,255,.22), rgba(255,255,255,.03));
+    }
+
+    /* hero */
+    .spacer{height:78px}
+    .hero{
+      padding:52px 0 26px;
+      text-align:center;
+    }
+    .title{
+      margin:0;
+      font-size:62px;
+      letter-spacing:-1px;
+      text-shadow: 0 14px 46px rgba(0,0,0,.55);
+    }
+    .subtitle{
+      margin:12px auto 22px;
+      max-width:640px;
+      color:rgba(155,182,214,.95);
+      line-height:1.55;
+    }
+    .heroActions{
+      display:flex; gap:10px; justify-content:center; flex-wrap:wrap;
+      margin:16px 0 22px;
+    }
+
+    /* cards */
+    .grid3{display:grid; grid-template-columns:repeat(3,1fr); gap:14px}
+    .grid2{display:grid; grid-template-columns:repeat(2,1fr); gap:14px}
+    .gridAuto{display:grid; grid-template-columns:repeat(3,1fr); gap:14px}
+    .card{
+      position:relative;
+      overflow:hidden;
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.10);
+      background: linear-gradient(180deg, var(--cardA), var(--cardB));
+      box-shadow: var(--shadow);
+      padding:18px;
+      opacity:0;
+      transform: translateY(14px) scale(.99);
+      transition: .45s ease;
+      transition-delay: var(--d, 0ms);
+    }
+    .card::before{
+      content:"";
+      position:absolute; inset:-2px;
+      background:
+        radial-gradient(600px 220px at 15% 10%, rgba(143,211,255,.14), transparent 60%),
+        radial-gradient(600px 220px at 85% 10%, rgba(124,92,255,.12), transparent 60%);
+      opacity:.55;
+      pointer-events:none;
+    }
+    .card.in{opacity:1; transform: translateY(0) scale(1)}
+    .card:hover{
+      border-color: rgba(143,211,255,.24);
+      transform: translateY(-4px);
+      box-shadow: 0 26px 80px rgba(0,0,0,.62), 0 0 42px rgba(143,211,255,.10);
+    }
+    .kpi{font-size:40px;font-weight:950; position:relative}
+    .kpiLabel{color:rgba(215,232,255,.72); font-size:13px; margin-top:6px; position:relative}
+
+    /* sections */
+    section{padding:32px 0}
+    .sectionTitle{
+      margin:0 0 10px;
+      font-size:22px;
+      letter-spacing:-.2px;
+    }
+    .sectionSub{
+      margin:0 0 16px;
+      color:rgba(155,182,214,.95);
+      line-height:1.55;
+      font-size:13px;
+      max-width:760px;
+    }
+
+    /* tabs */
+    .tabs{
+      display:flex; gap:8px; flex-wrap:wrap;
+      margin:10px 0 14px;
+    }
+    .tab{
+      padding:9px 12px; border-radius:999px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.03);
+      color:rgba(215,232,255,.85);
+      font-size:12px;
+      cursor:pointer;
+      transition:.15s ease;
+    }
+    .tab.active{
+      border-color: rgba(143,211,255,.35);
+      background: rgba(143,211,255,.12);
+      color: var(--text);
+    }
+
+    /* product card */
+    .productTitle{font-weight:900; font-size:16px; position:relative; margin:0 0 4px}
+    .productDesc{color:rgba(155,182,214,.95); font-size:12.5px; line-height:1.55; margin:0 0 12px; position:relative}
+    .priceRow{display:flex; align-items:baseline; justify-content:space-between; gap:10px; margin:8px 0 10px; position:relative}
+    .price{font-weight:950; font-size:18px}
+    .per{color:rgba(215,232,255,.65); font-size:12px}
+    ul.features{margin:10px 0 0; padding:0 0 0 16px; position:relative}
+    ul.features li{margin:6px 0; color:rgba(215,232,255,.80); font-size:12.5px}
+    .productActions{display:flex; gap:10px; margin-top:14px; position:relative}
+
+    /* team */
+    .teamRow{display:flex; gap:12px; align-items:center; position:relative}
+    .avatar{
+      width:44px;height:44px;border-radius:14px;
+      border:1px solid rgba(255,255,255,.10);
+      box-shadow: 0 14px 36px rgba(0,0,0,.35);
+      flex:0 0 auto;
+      overflow:hidden;
+      background: rgba(255,255,255,.04);
+    }
+    .avatar img{
+      width:100%; height:100%;
+      object-fit:cover;
+      display:block;
+    }
+    .name{font-weight:900}
+    .role{color:rgba(155,182,214,.95); font-size:12px; margin-top:3px}
+
+    /* testimonials */
+    .quote{
+      font-size:13px; line-height:1.6;
+      color:rgba(215,232,255,.88);
+      position:relative;
+    }
+    .who{margin-top:12px; color:rgba(155,182,214,.95); font-size:12px; position:relative}
+
+    /* footer */
+    footer{
+      padding:28px 0 34px;
+      border-top:1px solid rgba(255,255,255,.08);
+      margin-top:22px;
+      color:rgba(155,182,214,.95);
+      font-size:12px;
+    }
+    .footGrid{display:grid; grid-template-columns:2fr 1fr 1fr; gap:14px}
+    .footTitle{font-weight:900; color:rgba(215,232,255,.9); margin:0 0 10px}
+    .footLink{display:block; padding:6px 0; color:rgba(155,182,214,.95)}
+    .footLink:hover{color:rgba(215,232,255,.95)}
+
+    @media (max-width: 980px){
+      .nav{display:none}
+      .title{font-size:44px}
+      .grid3{grid-template-columns:1fr}
+      .grid2{grid-template-columns:1fr}
+      .gridAuto{grid-template-columns:1fr}
+      .footGrid{grid-template-columns:1fr}
+      .spacer{height:72px}
+    }
+    @media (prefers-reduced-motion: reduce){
+      .card{transition:none !important; opacity:1 !important; transform:none !important;}
+      html{scroll-behavior:auto}
+    }
+  </style>
+</head>
+
+<body>
+  <header class="topbar">
+    <div class="container">
+      <div class="row">
+        <div class="brand">
+          <div class="logo"></div>
+          <div>Rivea</div>
+        </div>
+
+        <nav class="nav">
+          <a href="#paketler">Paketlerimiz</a>
+          <a href="#botlar">Botlarımız</a>
+          <a href="#ekip">Ekibimiz</a>
+          <a href="#yorumlar">Yorumlar</a>
+        </nav>
+
+        <div class="right">
+          <div class="chip"><span class="dot"></span> Online</div>
+          <a class="btn" href="#paketler">Paketleri Gör</a>
+          <button class="btn primary" type="button">Giriş Yap</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="spacer"></div>
+
+  <main class="container">
+    <section class="hero">
+      <h1 class="title">Rivea</h1>
+      <p class="subtitle">Hızlı, güvenilir ve profesyonel Discord botlarının tek adresi. Paketler, botlar, ekip ve müşteri yorumları tek sayfada.</p>
+
+      <div class="heroActions">
+        <a class="btn primary" href="#paketler">Paketlerimiz</a>
+        <a class="btn" href="#botlar">Botlarımız</a>
+        <a class="btn" href="#ekip">Ekibimiz</a>
+      </div>
+
+      <div class="grid3">
+        <div class="card" style="--d:0ms">
+          <div class="kpi" id="site-ziyareti-sayi">0</div>
+          <div class="kpiLabel">Site Ziyareti</div>
+        </div>
+        <div class="card" style="--d:90ms">
+          <div class="kpi" id="musteri-sayi">2</div>
+          <div class="kpiLabel">Toplam Müşteri</div>
+        </div>
+        <div class="card" style="--d:180ms">
+          <div class="kpi" id="personel-sayi">10</div>
+          <div class="kpiLabel">Rivea Personel</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="paketler">
+      <h2 class="sectionTitle">Paketlerimiz</h2>
+      <p class="sectionSub"></p>
+
+      <div class="tabs" id="paketTabs">
+        <button class="tab active" data-m="1">Aylık</button>
+        <button class="tab" data-m="3">3 Aylık</button>
+        <button class="tab" data-m="6">6 Aylık</button>
+        <button class="tab" data-m="12">Yıllık</button>
+      </div>
+
+      <div class="gridAuto" id="paketGrid"></div>
+    </section>
+
+    <section id="botlar">
+      <h2 class="sectionTitle">Botlarımız</h2>
+      <p class="sectionSub"></p>
+
+      <div class="tabs" id="botTabs">
+        <button class="tab active" data-m="1">Aylık</button>
+        <button class="tab" data-m="3">3 Aylık</button>
+        <button class="tab" data-m="6">6 Aylık</button>
+        <button class="tab" data-m="12">Yıllık</button>
+      </div>
+
+      <div class="gridAuto" id="botGrid"></div>
+    </section>
+
+    <section id="ekip">
+      <h2 class="sectionTitle">Ekibimiz</h2>
+      <p class="sectionSub"></p>
+
+      <div class="grid2">
+        <div class="card" style="--d:0ms">
+          <div class="teamRow">
+            <div class="avatar">
+              <img alt="Rivea" referrerpolicy="no-referrer"
+                src="https://media.discordapp.net/attachments/1455297988678123708/1460818956129538205/image0.webp?ex=697381eb&is=6972306b&hm=b1a0f396191320534b25fcf57624efc0ab31c63c936d3b3c9d9281c74cb79b4f&=&format=webp">
+            </div>
+            <div>
+              <div class="name">Rivea</div>
+              <div class="role">Owner</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="--d:90ms">
+          <div class="teamRow">
+            <div class="avatar">
+              <img alt="Haku" referrerpolicy="no-referrer"
+                src="https://cdn.discordapp.com/attachments/1462477238430728264/1464021704002109522/Steam_Community____Error.gif?ex=6973f3f6&is=6972a276&hm=90a16f1692dbac529b0e36323ba19687621d0ecaf999b8baf9a63da551b63133&">
+            </div>
+            <div>
+              <div class="name">Haku</div>
+              <div class="role">Support Manager</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="yorumlar">
+      <h2 class="sectionTitle">Müşteri Yorumları</h2>
+      <p class="sectionSub"></p>
+
+      <div class="grid2">
+        <div class="card" style="--d:0ms">
+          <div class="quote">“Kalite asla tesadüf değildir. Ekibin desteği hızlı ve çözüm odaklı; botlar stabil çalışıyor.”</div>
+          <div class="who">— Neshh • MedusaRP</div>
+        </div>
+        <div class="card" style="--d:90ms">
+          <div class="quote">“Kurulumdan sonra yönetim işleri çok rahatladı. Log/ticket sistemleri mükemmel.”</div>
+          <div class="who">— Ato • DiaRP</div>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <div class="footGrid">
+        <div>
+          <div class="footTitle">Rivea</div>
+          <div>Hızlı, güvenilir ve profesyonel bot hizmetleri.</div>
+          <div style="margin-top:10px;opacity:.85">© 2026 Rivea. Tüm hakları saklıdır.</div>
+        </div>
+        <div>
+          <div class="footTitle">Hızlı Linkler</div>
+          <a class="footLink" href="#paketler">Paketlerimiz</a>
+          <a class="footLink" href="#botlar">Botlarımız</a>
+          <a class="footLink" href="#ekip">Ekibimiz</a>
+          <a class="footLink" href="#yorumlar">Yorumlar</a>
+        </div>
+        <div>
+          <div class="footTitle">Yasal</div>
+          <a class="footLink" href="#">Kullanım Şartları</a>
+          <a class="footLink" href="#">Gizlilik Politikası</a>
+          <a class="footLink" href="#">Çerez Politikası</a>
+        </div>
+      </div>
+    </footer>
+  </main>
+
+  <script>
+    // 1) Kart animasyonu
+    function animateCards() {
+      document.querySelectorAll(".card").forEach(c => c.classList.add("in"));
+    }
+
+    // 2) Sayı sayarak artma
+    function animateNumber(el, to, duration = 850) {
+      if (!el) return;
+      const start = Number(String(el.textContent).replace(/\./g, "").replace(/,/g, "")) || 0;
+      const end = Number(to) || 0;
+      const t0 = performance.now();
+      const step = (t) => {
+        const p = Math.min(1, (t - t0) / duration);
+        const v = Math.floor(start + (end - start) * p);
+        el.textContent = v.toLocaleString("tr-TR");
+        if (p < 1) requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    }
+
+    // 3) Netlify sayaç
+    async function bumpAndRenderVisits() {
+      try {
+        const res = await fetch("/.netlify/functions/counter", {
+          method: "POST",
+          cache: "no-store",
+        });
+        const data = await res.json();
+        animateNumber(document.querySelector("#site-ziyareti-sayi"), data.total ?? 0, 900);
+      } catch (e) {
+        console.error("Sayaç hatası:", e);
+      }
+    }
+
+    // 4) Paketler (isim + fiyat aynı; özellikleri ben doldurdum)
+    const PACKS = [
+      {
+        title: "Discord Full Pack",
+        desc: "Tam kapsamlı Discord sunucu yönetimi",
+        baseMonthly: 1000,
+        features: [
+          "Gelişmiş Moderasyon & Anti-Spam",
+          "Guard: rol/kanal/yetki koruması",
+          "Otomatik Backup + geri yükleme",
+          "Audit Log takip + detaylı log kanalları",
+          "Yetkili izin kontrolü & güvenli liste",
+          "Ticket sistemi + transcript",
+          "Kayıt/Onay sistemi (opsiyonel)",
+          "Hızlı kurulum + teknik destek"
+        ]
+      },
+      {
+        title: "Discord Pack",
+        desc: "Temel Discord sunucu yönetimi",
+        baseMonthly: 650,
+        features: [
+          "Moderasyon komutları (ban/kick/mute/timeout)",
+          "Guard: temel koruma sistemleri",
+          "Backup (kanal/rol ayarları)",
+          "Log sistemi (mesaj/kanal/rol)",
+          "Otomatik anti-raid koruması",
+          "Ticket sistemi (temel)",
+          "Basit kayıt/hoşgeldin mesajları",
+          "Kurulum desteği"
+        ]
+      },
+      {
+        title: "Legal Pack",
+        desc: "Legal ekipler için en uygun paket",
+        baseMonthly: 450,
+        features: [
+          "Mesai botu: giriş/çıkış takibi",
+          "Yetkili kontrol paneli (komut/izin)",
+          "Guard botu: temel sunucu koruma",
+          "Log & rapor kanalları",
+          "Vardiya/mesai uyarıları (opsiyonel)",
+          "Kurulum + destek"
+        ]
+      }
+    ];
+
+    // 5) Bot listesi (aynı kaldı)
+    const BOTS = [
+      {
+        title: "Moderasyon",
+        desc: "Fivem, Garry's Mod, Public vb. sunucular için",
+        baseMonthly: 425,
+        features: ["Ticket Sistemi", "Kayıt Sistemi", "Uyarı Sistemi", "Log Sistemi", "Gelişmiş Ceza"]
+      },
+      {
+        title: "Guard",
+        desc: "Gelişmiş koruma ve backup sistemi",
+        baseMonthly: 350,
+        features: ["Koruma Sistemleri", "Güvenli Listeler", "Backup", "Loglama"]
+      },
+      {
+        title: "Ticket",
+        desc: "Destek bileti sistemi",
+        baseMonthly: 200,
+        features: ["Kategori Sistemi", "Transcript", "Log Sistemi"]
+      }
+    ];
+
+    function priceFor(baseMonthly, months){
+      return Math.round(baseMonthly * months);
+    }
+    function moneyTR(v){
+      return v.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " TL";
+    }
+
+    function renderProducts(list, months, targetEl){
+      targetEl.innerHTML = "";
+      list.forEach((p, i) => {
+        const total = priceFor(p.baseMonthly, months);
+        const perText = months === 1 ? "/ ay" : ` / ${months} ay`;
+
+        const card = document.createElement("div");
+        card.className = "card";
+        card.style.setProperty("--d", (i*90) + "ms");
+        card.innerHTML = `
+          <div class="productTitle">${p.title}</div>
+          <div class="productDesc">${p.desc}</div>
+          <div class="priceRow">
+            <div>
+              <div class="price">${moneyTR(total)}</div>
+              <div class="per">${perText}</div>
+            </div>
+            <div class="chip" title="Süre">${months} Ay</div>
+          </div>
+          <ul class="features">
+            ${p.features.map(f => `<li>${f}</li>`).join("")}
+          </ul>
+          <div class="productActions">
+            <button class="btn primary" type="button">Sepete Ekle</button>
+            <button class="btn" type="button">Detay</button>
+          </div>
+        `;
+        targetEl.appendChild(card);
+      });
+
+      requestAnimationFrame(() => {
+        targetEl.querySelectorAll(".card").forEach(c => c.classList.add("in"));
+      });
+    }
+
+    function setupTabs(tabWrapId, gridId, data){
+      const wrap = document.getElementById(tabWrapId);
+      const grid = document.getElementById(gridId);
+      let months = 1;
+
+      renderProducts(data, months, grid);
+
+      wrap.addEventListener("click", (e) => {
+        const btn = e.target.closest(".tab");
+        if (!btn) return;
+
+        wrap.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+        btn.classList.add("active");
+
+        months = Number(btn.dataset.m) || 1;
+        renderProducts(data, months, grid);
+      });
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      animateCards();
+      bumpAndRenderVisits();
+
+      // demo sayılar
+      animateNumber(document.querySelector("#musteri-sayi"), 2, 650);
+      animateNumber(document.querySelector("#personel-sayi"), 10, 650);
+
+      setupTabs("paketTabs", "paketGrid", PACKS);
+      setupTabs("botTabs", "botGrid", BOTS);
+    });
+  </script>
+</body>
+</html>
