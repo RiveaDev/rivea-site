@@ -428,15 +428,24 @@
       requestAnimationFrame(step);
     }
 
-    // 3) Netlify sayaç
+    // ✅ 3) Cloudflare Pages sayaç (functions/counter.js => /counter)
     async function bumpAndRenderVisits() {
       try {
-        const res = await fetch("/.netlify/functions/counter", {
+        const res = await fetch("/counter", {
           method: "POST",
           cache: "no-store",
+          headers: { "Accept": "application/json" }
         });
-        const data = await res.json();
-        animateNumber(document.querySelector("#site-ziyareti-sayi"), data.total ?? 0, 900);
+
+        // bazı durumlarda Cloudflare HTML hata basarsa yakalayalım
+        const text = await res.text();
+        let data = {};
+        try { data = JSON.parse(text); } catch { data = {}; }
+
+        // hem total hem toplam destek
+        const total = (data.total ?? data.toplam ?? 0);
+
+        animateNumber(document.querySelector("#site-ziyareti-sayi"), total, 900);
       } catch (e) {
         console.error("Sayaç hatası:", e);
       }
