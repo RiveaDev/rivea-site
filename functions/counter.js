@@ -1,4 +1,5 @@
-export async function onRequest({ env }) {
+export async function onRequest(context) {
+  const { env } = context;
   const key = "total";
 
   let total = await env.COUNTER.get(key);
@@ -11,4 +12,3 @@ export async function onRequest({ env }) {
     { headers: { "Content-Type": "application/json" } }
   );
 }
-
